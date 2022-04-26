@@ -6,6 +6,7 @@ editor: visual
 ---
 
 ## Data Exploration
+
 ### Call Packages and data
 
 ```{r}
@@ -17,7 +18,6 @@ library(tmap) # Dealing with maps
 library(spgwr) # GWRs
 library(spdep) # moran's I
 ```
-
 
 As the data were all pre-cleaned, the csv files were all put into the same column key called `Name`.
 
@@ -36,7 +36,6 @@ strava %>%
   left_join(buildings, by = "Name") -> glasgow_df
 ```
 
-
 The @fig-ridecorrelation shows the correlation between Strava 2017 and Strava 2018. The correlation is `0.9975779`, which means it is nearly identical - not what I expected!
 
 ```{r}
@@ -48,17 +47,15 @@ plot(glasgow_df$ride17, glasgow_df$ride18)
 cor(glasgow_df$ride17, glasgow_df$ride18)
 ```
 
-
 ## Exploring the Variables
+
 To get an immediate understanding of the variables, the best thing is to map the variables and get summary tables. First, let us look at the summary of the variables.
 
 ```{r}
 glasgow_df %>% summary()
 ```
 
-
 Here we transform the data to a longer format glasgow_df_long using the `pivot_longer` function. This is to directly execute ggplot with facet wrapping. After the data transformation, we then merge the shapefile with the integrated data frame that is `gl_shp`.
-
 
 ```{r}
 glasgow_df %>% 
@@ -89,13 +86,11 @@ gl_strava
 #tmap_save(gl_strava, "strava.jpg", width = 1000, height = 400, dpi = 300)
 ```
 
-
 The figures below show that the per cent of the greenness (by Immediate Zones) gradually tends to decrease as it goes outside the city centre. The average is 8% across the whole area but the lowest is situated in the city centre and the city south.
 
 The height of the buildings were concentrated around the city centre. The City Centre South was the highest at 21.1% followed by City Centre East and City Centre West.
 
-PTAI (Public Transport Availability Indicators) also tend to more clustered in the city centre (>3000) and around the major bus routes (>2000) while the north and the east were relatively lower (<1000).
-
+PTAI (Public Transport Availability Indicators) also tend to more clustered in the city centre (\>3000) and around the major bus routes (\>2000) while the north and the east were relatively lower (\<1000).
 
 ```{r}
 # Other variables
@@ -111,7 +106,6 @@ gl_variable
 #tmap_save(gl_variable, "variables.jpg", width = 1000, height = 2500, dpi = 300)
 
 ```
-
 
 ## OLS Regression - log transformation
 
@@ -137,7 +131,6 @@ AIC(model17, k=3) # k = parameter
 
 ```
 
-
 ```{r ols2018}
 model18 <- lm(log(ride18) ~ log(green) + log(PTAI) + log(height), data = glasgow_df) 
 summary(model18)
@@ -150,7 +143,6 @@ AIC(model18, k=3) # k = parameter
 #exp(coef(model18)["height"])
 #car::vif(model18)
 ```
-
 
 ```{r spatialjoin}
 
@@ -169,8 +161,6 @@ mapres18 <- qtm(glasgow_gwr, fill = "Residuals18") + tm_legend(legend.position =
 #tmap_save(plot_residuals, "Residuals.jpg")
 ```
 
-
-
 ```{r moransI}
 ## Morans'I
 nb <- poly2nb(glasgow_gwr, queen=TRUE) # calculate neighbours queen continuity
@@ -183,8 +173,6 @@ globalMoran18
 
 glasgow_sp <- as_Spatial(glasgow_gwr)
 ```
-
-
 
 ```{r bandwidth}
 gwr.bandwidth1 <-gwr.sel(log(ride18) ~ log(green) + log(PTAI) + log(height), 
@@ -220,7 +208,6 @@ strava17_height  <- qtm(gwr_results17, fill = "log.height.")  + tm_legend(legend
 #tmap_save(plot_2017, "GWR2017.jpg")
 ```
 
-
 ```{r Strava2018}
 gwr.bandwidth3 <-gwr.sel(log(ride18) ~ green + PTAI + height, 
                          data = glasgow_sp,
@@ -254,7 +241,3 @@ strava18_height <- qtm(gwr_results18, fill = "log.height.")   + tm_legend(legend
 #tmap_save(plot_2018, "GWR2018.jpg")
 
 ```
-
-
-
-
